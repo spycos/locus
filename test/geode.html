@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Geode Javascript API</title>
+  <script type="text/javascript" src="http://loki.com/plugin/files/loki.js"></script>
+  <script type="text/javascript" src="../src/locus.js"></script>  
+  <script type="text/javascript">
+    function load() {
+      var success = function(location) {
+        document.getElementById('latlng').innerHTML = "lat = " + location.coords.latitude 
+          + ", lng = " + location.coords.longitude;
+      };
+      
+      var error = function(error) {
+        alert('error getting location: ' + error.message);
+      }
+      
+      locus.getPosition(success, error);
+    }
+  </script>
+</head>
+<body onLoad="load();">
+  <h1>Simple Geode Javascript API Example</h1>
+  
+  <p id="latlng"></p>
+</body>
+</html>
