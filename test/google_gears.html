@@ -9,22 +9,26 @@
 	
 	<script type="text/javascript" src="gears_init.js"></script>
   <script type="text/javascript">
-    var geo = google.gears.factory.create('beta.geolocation');
+    function load() {
+      var geo = google.gears.factory.create('beta.geolocation');
 
-    function updatePosition(position) {
-      alert('Current lat/lon is: ' + position.latitude + ',' + position.longitude);
+      var updatePosition = function(position) {
+        document.getElementById('latlng').innerHTML = 'Current lat/lon is: ' 
+          + position.latitude + ',' + position.longitude;
+      }
+
+      var handleError = function(positionError) {
+        document.getElementById('latlng').innerHTML = 'Attempt to get location failed: ' 
+          + positionError.message;
+      }
+
+      geo.getCurrentPosition(updatePosition, handleError);
     }
-
-    function handleError(positionError) {
-      alert('Attempt to get location failed: ' + positionError.message);
-    }
-
-    geo.getCurrentPosition(updatePosition, handleError);
+    
   </script>
 </head>
 
-<body>
-
-
+<body onLoad="load();">
+  <p id="latlng"></p>
 </body>
 </html>
