@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Geolocation Javascript API</title>
+  <script type="text/javascript" src="http://loki.com/plugin/files/loki.js"></script>
+  <script type="text/javascript" src="gears_init.js"></script>
+  <script type="text/javascript" src="../src/locus.js"></script>  
+  <script type="text/javascript">
+    function load() {
+      var defaultClick = function() {
+        locus.getCurrentPosition(function(location) {
+          document.getElementById('default-latlng').innerHTML = "lat = " + location.latitude 
+            + ", lng = " + location.longitude;
+        }, function(message) {
+          document.getElementById('default-latlng').innerHTML = message;
+        });
+      };
+      
+      document.getElementById('default').addEventListener('click', defaultClick, false);
+      
+      var lokiClick = function() {
+        locus.getCurrentPosition(function(location) {
+          document.getElementById('loki-latlng').innerHTML = "lat = " + location.latitude 
+            + ", lng = " + location.longitude;
+        }, function(message) {
+          document.getElementById('loki-latlng').innerHTML = message;
+        }, {serviceList: ['loki'], LOKI_KEY: 'larrymyers.com'});
+      };
+      
+      document.getElementById('loki').addEventListener('click', lokiClick, false);
+      
+      var geodeClick = function() {
+        locus.getCurrentPosition(function(location) {
+          document.getElementById('geode-latlng').innerHTML = "lat = " + location.latitude 
+            + ", lng = " + location.longitude;
+        }, function(message) {
+          document.getElementById('geode-latlng').innerHTML = message;
+        }, {serviceList: ['geode']});
+      };
+      
+      document.getElementById('geode').addEventListener('click', geodeClick, false);
+      
+      var gearsClick = function() {
+        locus.getCurrentPosition(function(location) {
+          document.getElementById('gears-latlng').innerHTML = "lat = " + location.latitude 
+            + ", lng = " + location.longitude;
+        }, function(message) {
+          document.getElementById('gears-latlng').innerHTML = message;
+        }, {serviceList: ['gears']});
+      };
+      
+      document.getElementById('gears').addEventListener('click', gearsClick, false);
+    }
+  </script>
+</head>
+<body onload="load();">
+  <h1>Simple Geolocation Javascript API Example</h1>
+  
+  <h2>Default</h2>
+  
+  <p id="default-latlng"></p>
+  
+  <button id="default">Get Location</button>
+  
+  <h2>Loki</h2>
+  
+  <p id="loki-latlng"></p>
+  
+  <button id="loki">Get Location</button>
+  
+  <h2>Geode</h2>
+  
+  <p id="geode-latlng"></p>
+  
+  <button id="geode">Get Location</button>
+  
+  <h2>Google Gears</h2>
+  
+  <p id="gears-latlng"></p>
+  
+  <button id="gears">Get Location</button>
+</body>
+</html>
