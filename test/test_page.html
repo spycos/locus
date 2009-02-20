@@ -6,6 +6,24 @@
   <script type="text/javascript" src="gears_init.js"></script>
   <script type="text/javascript" src="../src/locus.js"></script>  
   <script type="text/javascript">
+    function listServices() {
+      var list = '';
+
+      var services = ['loki','geode','gears'];
+
+      for (var i = 0; i < services.length; i++) {
+        if (locus.check(services[i])) {
+          list += '<li>' + services[i] + '</li>';
+        }
+      }
+
+      if (list.length == 0) {
+        list = '<li>None.</li>';
+      }
+
+      document.getElementById('service-list').innerHTML = list;
+    }
+    
     function load() {
       var defaultClick = function() {
         locus.getCurrentPosition(function(location) {
@@ -50,11 +68,17 @@
       };
       
       document.getElementById('gears').addEventListener('click', gearsClick, false);
+      
+      listServices();
     }
   </script>
 </head>
 <body onload="load();">
   <h1>Simple Geolocation Javascript API Example</h1>
+  
+  <h2>Installed:</h2>
+  
+  <ul id="service-list"></ul>
   
   <h2>Default</h2>
   
