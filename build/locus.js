@@ -63,7 +63,7 @@
   obj.check = function(serviceName) {
     var flag = false;
     
-    if (!serviceName || (typeof serviceName != 'String')) {
+    if (!serviceName || (typeof serviceName != 'string')) {
       return flag;
     }
     
