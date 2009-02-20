@@ -1,4 +1,4 @@
-/**
+/*!
  * Copyright (c) 2009 Larry Myers
  * 
  * Permission is hereby granted, free of charge, to any person

@@ -1,3 +1,212 @@
+/*!
+ * Copyright (c) 2009 Larry Myers
+ * 
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Locus - A Geolocation Javascript Library
+ */
+(function() {  
+  var obj = {};
+  
+  function checkGeode() {
+    return (typeof navigator.geolocation != 'undefined');
+  };
+  
+  function doGeode(successCallback, errorCallback, options) {
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  };
+  
+  function checkLoki() {
+    return (typeof LokiAPI == 'function');
+  };
+  
+  function doLoki(successCallback, errorCallback, options) {    
+    var loki = LokiAPI();
+    loki.onSuccess = successCallback;
+    loki.onFailure = errorCallback;
+    loki.setKey(options.LOKI_KEY);
+    loki.requestLocation(true,loki.NO_STREET_ADDRESS_LOOKUP);
+  };
+  
+  function checkGears() {
+    return (typeof window.google != 'undefined');
+  };
+  
+  function doGears(successCallback, errorCallback, options) {
+    var geo = google.gears.factory.create('beta.geolocation');
+    geo.getCurrentPosition(successCallback, errorCallback);
+  };
+  
+  /**
+   * Check if the service is available on the client browser.
+   * Returns boolean value as result.
+   */
+  obj.check = function(serviceName) {
+    var flag = false;
+    
+    if (!serviceName || (typeof serviceName != 'String')) {
+      return flag;
+    }
+    
+    switch(serviceName.toLowerCase()) {
+      case 'loki':
+        flag = checkLoki();
+        break;
+      case 'geode':
+        flag = checkGeode();
+        break;
+      case 'gears':
+        flag = checkGears();
+        break;
+      default:
+        flag = false;
+    }
+    
+    return flag;
+  };
+  
+  /**
+   * Gets the current lat/lng of the client browser, and passes
+   * the result to the provided callback function.
+   */
+  obj.getCurrentPosition = function(callback, errorCallback, options) {    
+    if (typeof options == 'undefined') {
+      options = {};
+    }
+    
+    var serviceList;
+    
+    if (options.serviceList) {
+      serviceList = options.serviceList;
+    } else {
+      serviceList = ['loki','geode','gears'];
+    }
+    
+    for (var i = 0; i < serviceList.length; i++) {
+      if (serviceList[i] == 'loki' && options.LOKI_KEY && checkLoki()) {
+        doLoki(callback, errorCallback, options);
+        return;
+      } else if (serviceList[i] == 'geode' && checkGeode()) {
+        doGeode(callback, errorCallback, options);
+        return;
+      } else if (serviceList[i] == 'gears' && checkGears()) {
+        doGears(callback, errorCallback, options);
+        return;
+      }
+    }
+    
+    errorCallback('No location services were found.');
+  };
+
+  window.locus = obj;
+})();
+/*! Copyright 2007, Google Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *  3. Neither the name of Google Inc. nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
+ *     specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Sets up google.gears.*, which is *the only* supported way to access Gears.
+ *
+ * Circumvent this file at your own risk!
+ *
+ * In the future, Gears may automatically define google.gears.* without this
+ * file. Gears may use these objects to transparently fix bugs and compatibility
+ * issues. Applications that use the code below will continue to work seamlessly
+ * when that happens.
+ */
+
+(function() {
+  // We are already defined. Hooray!
+  if (window.google && google.gears) {
+    return;
+  }
+
+  var factory = null;
+
+  // Firefox
+  if (typeof GearsFactory != 'undefined') {
+    factory = new GearsFactory();
+  } else {
+    // IE
+    try {
+      factory = new ActiveXObject('Gears.Factory');
+      // privateSetGlobalObject is only required and supported on IE Mobile on
+      // WinCE.
+      if (factory.getBuildInfo().indexOf('ie_mobile') != -1) {
+        factory.privateSetGlobalObject(this);
+      }
+    } catch (e) {
+      // Safari
+      if ((typeof navigator.mimeTypes != 'undefined')
+           && navigator.mimeTypes["application/x-googlegears"]) {
+        factory = document.createElement("object");
+        factory.style.display = "none";
+        factory.width = 0;
+        factory.height = 0;
+        factory.type = "application/x-googlegears";
+        document.documentElement.appendChild(factory);
+      }
+    }
+  }
+
+  // *Do not* define any objects if Gears is not installed. This mimics the
+  // behavior of Gears defining the objects in the future.
+  if (!factory) {
+    return;
+  }
+
+  // Now set up the objects, being careful not to overwrite anything.
+  //
+  // Note: In Internet Explorer for Windows Mobile, you can't add properties to
+  // the window object. However, global objects are automatically added as
+  // properties of the window object in all browsers.
+  if (!window.google) {
+    google = {};
+  }
+
+  if (!google.gears) {
+    google.gears = {factory: factory};
+  }
+})();
 /*!  Loki Javascript API
  *  Ryan Sarver <rsarver@skyhookwireless.com>
  *
