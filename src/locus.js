@@ -25,7 +25,16 @@
  * Locus - A Geolocation Javascript Library
  */
 (function() {  
-  var obj = {};
+  var obj = {}; // object to attach public functions to
+  var loki, gears;
+  
+  if (typeof LokiAPI == 'function') {
+    loki = LokiAPI();
+  }
+
+  if (typeof window.google != 'undefined') {
+    gears = google.gears.factory.create('beta.geolocation');
+  }
   
   function checkGeode() {
     return (typeof navigator.geolocation != 'undefined');
@@ -36,11 +45,10 @@
   };
   
   function checkLoki() {
-    return (typeof LokiAPI == 'function');
+    return (loki) ? true : false;
   };
   
-  function doLoki(successCallback, errorCallback, options) {    
-    var loki = LokiAPI();
+  function doLoki(successCallback, errorCallback, options) {
     loki.onSuccess = successCallback;
     loki.onFailure = errorCallback;
     loki.setKey(options.LOKI_KEY);
@@ -48,12 +56,11 @@
   };
   
   function checkGears() {
-    return (typeof window.google != 'undefined');
+    return (gears) ? true : false;
   };
   
   function doGears(successCallback, errorCallback, options) {
-    var geo = google.gears.factory.create('beta.geolocation');
-    geo.getCurrentPosition(successCallback, errorCallback);
+    gears.getCurrentPosition(successCallback, errorCallback);
   };
   
   /**
@@ -77,8 +84,6 @@
       case 'gears':
         flag = checkGears();
         break;
-      default:
-        flag = false;
     }
     
     return flag;
