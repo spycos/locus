@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2009 Larry Myers
+ * Locus v0.3 - A Geolocation Javascript Library
+ *
+ * Copyright (c) 2009 Larry Myers (larry@larrymyers.com)
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -21,10 +23,8 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- *
- * Locus - A Geolocation Javascript Library
  */
-(function(){var f={};function a(){return(typeof navigator.geolocation!="undefined")}function d(h,j,k){navigator.geolocation.getCurrentPosition(h,j)}function e(){return(typeof LokiAPI=="function")}function c(j,k,l){var h=LokiAPI();h.onSuccess=j;h.onFailure=k;h.setKey(l.LOKI_KEY);h.requestLocation(true,h.NO_STREET_ADDRESS_LOOKUP)}function b(){return(typeof window.google!="undefined")}function g(h,j,k){var l=google.gears.factory.create("beta.geolocation");l.getCurrentPosition(h,j)}f.check=function(j){var h=false;if(!j||(typeof j!="string")){return h}switch(j.toLowerCase()){case"loki":h=e();break;case"geode":h=a();break;case"gears":h=b();break;default:h=false}return h};f.getCurrentPosition=function(m,h,j){if(typeof j=="undefined"){j={}}var l;if(j.serviceList){l=j.serviceList}else{l=["loki","geode","gears"]}for(var k=0;k<l.length;k++){if(l[k]=="loki"&&j.LOKI_KEY&&e()){c(m,h,j);return}else{if(l[k]=="geode"&&a()){d(m,h,j);return}else{if(l[k]=="gears"&&b()){g(m,h,j);return}}}}h("No location services were found.")};window.locus=f})();
+(function(){var d={};var c,b;if(LokiAPI.isInstalled()){c=LokiAPI()}if(typeof window.google!="undefined"){b=google.gears.factory.create("beta.geolocation")}function e(){return(typeof navigator.geolocation!="undefined")}function h(k,l,m){var n=function(o){locus.lastPosition=o;k(o)};navigator.geolocation.getCurrentPosition(n,l,m)}function g(){return(c)?true:false}function f(k,l,n){var o=function(p){locus.lastPosition=p;k(p)};var m=function(q,p){l(p)};c.onSuccess=o;c.onFailure=m;c.setKey(n.LOKI_KEY);c.requestLocation(true,c.NO_STREET_ADDRESS_LOOKUP)}function j(){return(b)?true:false}function a(k,l,n){var o=function(p){locus.lastPosition=p;k(p)};var m=function(p){l(p.message)};b.getCurrentPosition(o,m)}d.lastPosition=null;d.check=function(l){var k=false;if(!l||(typeof l!="string")){return k}switch(l.toLowerCase()){case"loki":k=g();break;case"geode":k=e();break;case"gears":k=j();break}return k};d.getCurrentPosition=function(o,k,l){if(typeof l=="undefined"){l={}}var n;if(l.serviceList){n=l.serviceList}else{n=["loki","geode","gears"]}for(var m=0;m<n.length;m++){if(n[m]=="loki"&&l.LOKI_KEY&&g()){f(o,k,l);return}else{if(n[m]=="geode"&&e()){h(o,k,l);return}else{if(n[m]=="gears"&&j()){a(o,k,l);return}}}}k("No location services were found.")};window.locus=d})();
 /* Copyright 2007, Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
