@@ -1,4 +1,4 @@
-/*!  Loki Javascript API
+/*  Loki Javascript API
  *  Ryan Sarver <rsarver@skyhookwireless.com>
  *
  *  This is a helper script to help you detect and gracefully handle
@@ -10,8 +10,8 @@
 // Version
 /////////////////////////////////////////////////////////////////////////////////////////
 
-LokiPlugin.availableVersion = "2.7.2.18";
-LokiPlugin.scriptRevision = "2";
+LokiPlugin.availableVersion = "3.1.0.05";
+LokiPlugin.scriptRevision = "7";
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Loki API wrapper
@@ -72,6 +72,7 @@ LokiPlugin.isInstalled = function(silent)
             /* FALLTHROUGH */
         case "Opera":
         case "Safari":
+        case "Chrome":
             return LokiPlugin.isInstalled_NPAPI(silent);
 
         default:
@@ -94,6 +95,7 @@ LokiPlugin.initPlugin = function()
         case "Firefox":
         case "Opera":
         case "Safari":
+        case "Chrome":
             LokiPlugin.init_NPAPI();
             break;
     }
@@ -137,14 +139,14 @@ LokiPlugin.checkVersionOnServer = function(description)
 LokiPlugin.prototype.browserSupported = function()
 {
     // Here is complete list of well supported platforms and browsers
-    // TODO add Chrome/Konqueror/Flock support
+    // TODO add Konqueror/Flock support
 
     if ((BrowserDetect.OS != "Windows" &&
-         BrowserDetect.OS != "Mac" &&
-         BrowserDetect.OS != "Linux") ||
+         BrowserDetect.OS != "Mac") ||
         (BrowserDetect.browser != "Explorer" &&
          BrowserDetect.browser != "Firefox" && 
          BrowserDetect.browser != "Safari" &&
+         BrowserDetect.browser != "Chrome" &&
          BrowserDetect.browser != "Opera"))
     {
         return false;
@@ -295,7 +297,8 @@ LokiPlugin.prototype.runRequestLocation_XPCOM = function(IP, latlon, addressLook
     LokiPlugin.lastOnFailure = this.onFailure;
     LokiPlugin.lastOnSuccess = this.onSuccess;
 
-    LokiPlugin.xpcom.setKey(this.key);
+    if ("" != this.key)
+        LokiPlugin.xpcom.setKey(this.key);
     
     try
     {
@@ -313,7 +316,8 @@ LokiPlugin.prototype.runRequestLocation_IE = function(IP, latlon, addressLookup)
     LokiPlugin.lastOnFailure = this.onFailure;
     LokiPlugin.lastOnSuccess = this.onSuccess;
 
-    LokiPlugin.activex.setKey(this.key);
+    if ("" != this.key)
+        LokiPlugin.activex.setKey(this.key);
     
     try
     {
@@ -335,6 +339,10 @@ LokiPlugin.isInstalled_NPAPI = function(silent)
 {
     var deprecatedVersionIdx = -1;
 
+    // Chrome requires true to see plugin. Other browser will reload page endless.
+    if (BrowserDetect.browser == "Chrome")
+        navigator.plugins.refresh(true);
+    else
     navigator.plugins.refresh(false);
     for (var i = 0; i < navigator.plugins.length; ++i)
     {
@@ -343,6 +351,13 @@ LokiPlugin.isInstalled_NPAPI = function(silent)
 
         if (navigator.plugins[i].name == "Loki Plugin")
         {
+            // Workaround for skip activeX plugin in Chrome. 
+            // Chrome also detects activex plugin, but we should use npapi
+            // TODO: Chrome can partially support activex plugin. May be we can use it 
+            // if no npapi version installed.
+            if (BrowserDetect.browser == "Chrome" && navigator.plugins[i].filename == "loki.dll")
+                continue;
+    
             if (!silent && this.checkDeprecatedVersion(navigator.plugins[i].description))
                 return false;
 
@@ -458,6 +473,7 @@ LokiPlugin.prototype.tryToInstallPlugin = function()
             if (  BrowserDetect.javaWaitingConfirmation &&
                 ( BrowserDetect.browser == "Explorer" || 
                  (BrowserDetect.browser == "Safari" && BrowserDetect.OS == "Windows") ||
+                 (BrowserDetect.browser == "Chrome" && BrowserDetect.OS == "Windows") ||
                  (BrowserDetect.browser == "Firefox" && LokiPlugin.javaPluginDescription.indexOf('1.4.') != -1)
                 )
                )
@@ -483,6 +499,7 @@ LokiPlugin.prototype.tryToInstallPlugin = function()
         {
             if ( BrowserDetect.browser == "Explorer" || 
                 (BrowserDetect.browser == "Safari" && BrowserDetect.OS == "Windows") ||
+                (BrowserDetect.browser == "Chrome" && BrowserDetect.OS == "Windows") ||
                 (BrowserDetect.browser == "Firefox" && LokiPlugin.javaPluginDescription.indexOf('1.4.') != -1)
                )
             {
@@ -562,7 +579,7 @@ LokiPlugin.startInstallApplet = function()
     document.getElementsByTagName('body').item(0).appendChild(appletDiv);
 
     var globalUrlParameter = LokiPlugin.useGlobalURLs ?
-                                 '<PARAM NAME="globalUrlPrexif" VALUE="' + LokiPlugin.globalURLPrefix + '">'
+                                 '<PARAM NAME="globalUrlPrefix" VALUE="' + LokiPlugin.globalURLPrefix + '">'
                                  : '';
 
     if (BrowserDetect.browser == "Explorer")
@@ -679,9 +696,9 @@ function compareVersions(version1, version2)
 
     for (i = 0; i < versions1.length && i < versions2.length; i++)
     {
-        if (parseInt(versions1[i]) > parseInt(versions2[i]))
+        if (parseInt(versions1[i], 10) > parseInt(versions2[i], 10))
             return i+1;
-        if (parseInt(versions1[i]) < parseInt(versions2[i]))
+        if (parseInt(versions1[i], 10) < parseInt(versions2[i], 10))
             return -(i+1);
     }
     return 0;
@@ -776,6 +793,16 @@ var BrowserDetect = {
         },
         {
             string: navigator.vendor,
+            subString: "Apple",
+            identity: "Safari"
+        },
+        {
+            string: navigator.vendor,
+            subString: "Google",
+            identity: "Chrome"
+        },
+        {
+            string: navigator.vendor,
             subString: "KDE",
             identity: "Konqueror"
         },
@@ -784,11 +811,6 @@ var BrowserDetect = {
             subString: "OmniWeb",
             versionSearch: "OmniWeb/",
             identity: "OmniWeb"
-        },
-        {
-            string: navigator.vendor,
-            subString: "Apple",
-            identity: "Safari"
         },
         {
             string: navigator.vendor,
@@ -933,7 +955,7 @@ LokiPlugin.runNullapplet = function()
     
     BrowserDetect.javaWaitingConfirmationSince = (new Date()).getTime();
 
-    if (BrowserDetect.browser == "Safari")
+    if (BrowserDetect.browser == "Safari" || BrowserDetect.browser == "Chrome")
         appletDiv.innerHTML = '<object type="application/x-java-applet" code="nullapplet.class" ' + codebase + ' width=0 height=0><PARAM NAME="MAYSCRIPT" VALUE="true"><param name="JAVA_CODEBASE" value="' + LokiPlugin.globalURLPrefix + '"></object>';
     else if (BrowserDetect.browser == "Explorer")
         appletDiv.innerHTML = '<OBJECT id="nullapplet" classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" WIDTH="0" HEIGHT="0">' + codebase_par + '<PARAM NAME="CODE" VALUE="nullapplet.class"/><PARAM NAME="scriptable" VALUE="true"/></OBJECT>';

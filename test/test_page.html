@@ -9,7 +9,7 @@
     function listServices() {
       var list = '';
 
-      var services = ['loki','geode','gears'];
+      var services = ['loki','w3c','gears'];
 
       for (var i = 0; i < services.length; i++) {
         if (locus.check(services[i])) {
@@ -47,16 +47,16 @@
       
       document.getElementById('loki').addEventListener('click', lokiClick, false);
       
-      var geodeClick = function() {
+      var w3cClick = function() {
         locus.getCurrentPosition(function(location) {
-          document.getElementById('geode-latlng').innerHTML = "lat = " + location.latitude 
+          document.getElementById('w3c-latlng').innerHTML = "lat = " + location.latitude 
             + ", lng = " + location.longitude;
         }, function(message) {
-          document.getElementById('geode-latlng').innerHTML = message;
-        }, {serviceList: ['geode']});
+          document.getElementById('w3c-latlng').innerHTML = message;
+        }, {serviceList: ['w3c']});
       };
       
-      document.getElementById('geode').addEventListener('click', geodeClick, false);
+      document.getElementById('w3c').addEventListener('click', w3cClick, false);
       
       var gearsClick = function() {
         locus.getCurrentPosition(function(location) {
@@ -92,11 +92,11 @@
   
   <button id="loki">Get Location</button>
   
-  <h2>Geode</h2>
+  <h2>W3C Geolocation</h2>
   
-  <p id="geode-latlng"></p>
+  <p id="w3c-latlng"></p>
   
-  <button id="geode">Get Location</button>
+  <button id="w3c">Get Location</button>
   
   <h2>Google Gears</h2>
   

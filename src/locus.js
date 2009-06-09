@@ -1,5 +1,5 @@
 /*!
- * Locus v0.3 - A Geolocation Javascript Library
+ * Locus v0.5 - A Geolocation Javascript Library
  *
  * Copyright (c) 2009 Larry Myers (larry@larrymyers.com)
  * 
@@ -25,12 +25,11 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 (function() {  
-  var obj = {}; // object to attach public functions to
   var loki, gears;
   
   // init the geolocation APIs
   
-  if (LokiAPI.isInstalled()) {
+  if ((typeof LokiAPI != 'undefined') && LokiAPI.isInstalled()) {
     loki = LokiAPI();
   }
 
@@ -38,13 +37,13 @@
     gears = google.gears.factory.create('beta.geolocation');
   }
   
-  // Mozilla Geode implementation
+  // the W3C Geolocation Specification
   
-  function checkGeode() {
+  function checkW3C() {
     return (typeof navigator.geolocation != 'undefined');
   };
   
-  function doGeode(successCallback, errorCallback, options) {
+  function doW3C(successCallback, errorCallback, options) {
     var success = function(location) {
       locus.lastPosition = location;
       successCallback(location);
@@ -95,70 +94,73 @@
   };
   
   /**
-   * The last successfully determined position
+   * The locus namespace.
    */
-  obj.lastPosition = null;
-  
-  /**
-   * Check if the service is available on the client browser.
-   * Returns boolean value as result.
-   */
-  obj.check = function(serviceName) {
-    var flag = false;
-    
-    if (!serviceName || (typeof serviceName != 'string')) {
-      return flag;
-    }
-    
-    switch(serviceName.toLowerCase()) {
-      case 'loki':
-        flag = checkLoki();
-        break;
-      case 'geode':
-        flag = checkGeode();
-        break;
-      case 'gears':
-        flag = checkGears();
-        break;
-    }
-    
-    return flag;
-  };
-  
-  /**
-   * Gets the current lat/lng of the client browser, and passes
-   * the result to the provided success callback function. On failure
-   * the error message will be passed to the error callback. Options
-   * are specific to each service implementation.
-   */
-  obj.getCurrentPosition = function(callback, errorCallback, options) {    
-    if (typeof options == 'undefined') {
-      options = {};
-    }
-    
-    var serviceList;
-    
-    if (options.serviceList) {
-      serviceList = options.serviceList;
-    } else {
-      serviceList = ['loki','geode','gears'];
-    }
-    
-    for (var i = 0; i < serviceList.length; i++) {
-      if (serviceList[i] == 'loki' && options.LOKI_KEY && checkLoki()) {
-        doLoki(callback, errorCallback, options);
-        return;
-      } else if (serviceList[i] == 'geode' && checkGeode()) {
-        doGeode(callback, errorCallback, options);
-        return;
-      } else if (serviceList[i] == 'gears' && checkGears()) {
-        doGears(callback, errorCallback, options);
-        return;
+  window.locus = {
+    /**
+     * The last successfully determined position
+     */
+    lastPosition: null,
+
+    /**
+     * Check if the service is available on the client browser.
+     * Returns boolean value as result.
+     */
+    check: function(serviceName) {
+      var flag = false;
+
+      if (!serviceName || (typeof serviceName != 'string')) {
+        return flag;
       }
+
+      switch(serviceName.toLowerCase()) {
+        case 'w3c':
+          flag = checkW3C();
+          break;
+        case 'gears':
+          flag = checkGears();
+          break;
+        case 'loki':
+          flag = checkLoki();
+          break;
+      }
+
+      return flag;
+    },
+
+    /**
+     * Gets the current lat/lng of the client browser, and passes
+     * the result to the provided success callback function. On failure
+     * the error message will be passed to the error callback. Options
+     * are specific to each service implementation.
+     */
+    getCurrentPosition: function(callback, errorCallback, options) {    
+      if (typeof options == 'undefined') {
+        options = {};
+      }
+
+      var serviceList, i = 0;
+
+      if (options.serviceList) {
+        serviceList = options.serviceList;
+      } else {
+        serviceList = ['loki','w3c','gears'];
+      }
+
+      for (; i < serviceList.length; i++) {
+        if (serviceList[i] == 'loki' && options.LOKI_KEY && checkLoki()) {
+          doLoki(callback, errorCallback, options);
+          return;
+        } else if (serviceList[i] == 'w3c' && checkW3C()) {
+          doW3C(callback, errorCallback, options);
+          return;
+        } else if (serviceList[i] == 'gears' && checkGears()) {
+          doGears(callback, errorCallback, options);
+          return;
+        }
+      }
+
+      errorCallback('No location services were found.');
     }
-    
-    errorCallback('No location services were found.');
-  };
-  
-  window.locus = obj;
+  }
 })();
