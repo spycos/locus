@@ -1,15 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
   <title>Geolocation Javascript API</title>
-  <script type="text/javascript" src="../ext/loki.js"></script>
-  <script type="text/javascript" src="../ext/gears_init.js"></script>
   <script type="text/javascript" src="../src/locus.js"></script>  
   <script type="text/javascript">
     function listServices() {
       var list = '';
 
-      var services = ['loki','w3c','gears'];
+      var services = ['w3c','gears'];
 
       for (var i = 0; i < services.length; i++) {
         if (locus.check(services[i])) {
@@ -36,21 +34,10 @@
       
       document.getElementById('default').addEventListener('click', defaultClick, false);
       
-      var lokiClick = function() {
-        locus.getCurrentPosition(function(location) {
-          document.getElementById('loki-latlng').innerHTML = "lat = " + location.latitude 
-            + ", lng = " + location.longitude;
-        }, function(message) {
-          document.getElementById('loki-latlng').innerHTML = message;
-        }, {serviceList: ['loki'], LOKI_KEY: 'larrymyers.com'});
-      };
-      
-      document.getElementById('loki').addEventListener('click', lokiClick, false);
-      
       var w3cClick = function() {
         locus.getCurrentPosition(function(location) {
-          document.getElementById('w3c-latlng').innerHTML = "lat = " + location.latitude 
-            + ", lng = " + location.longitude;
+          document.getElementById('w3c-latlng').innerHTML = "lat = " + location.coords.latitude 
+            + ", lng = " + location.coords.longitude;
         }, function(message) {
           document.getElementById('w3c-latlng').innerHTML = message;
         }, {serviceList: ['w3c']});
@@ -69,6 +56,8 @@
       
       document.getElementById('gears').addEventListener('click', gearsClick, false);
       
+      locus.loadGears();
+      
       listServices();
     }
   </script>
@@ -85,12 +74,6 @@
   <p id="default-latlng"></p>
   
   <button id="default">Get Location</button>
-  
-  <h2>Loki</h2>
-  
-  <p id="loki-latlng"></p>
-  
-  <button id="loki">Get Location</button>
   
   <h2>W3C Geolocation</h2>
   
