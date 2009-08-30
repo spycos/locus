@@ -63,6 +63,8 @@
         gears.getCurrentPosition(success, error);
     },
 
+    // geolocation api's can't quite agree on yet whether lat/lng are part of a coords obj
+    // or top level on the location. we make sure both are present just in case.
     normalizeLocation = function(location) {      
         if (!location.coords && location.latitude && location.longitude) {
             location.coords = {latitude: location.latitude, longitude: location.longitude};
@@ -114,6 +116,10 @@
             return flag;
         },
         
+        /**
+         * Loads the gears_init.js file in order to take advantage of google's geolocation api.
+         * If no url is provided it will load by default the version from code.google.com.
+         */
         loadGears: function(url) {
             if (!url) {
                 url = "http://code.google.com/apis/gears/gears_init.js";
@@ -145,7 +151,7 @@
             if (options.serviceList) {
                 serviceList = options.serviceList;
             } else {
-                serviceList = ['w3c','gears'];
+                serviceList = ['gears','w3c'];
             }
 
             for (; i < serviceList.length; i++) {
